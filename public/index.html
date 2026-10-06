@@ -553,11 +553,11 @@
         zoomDelta:0.5
       }).setView([12.9716,77.5946],12);
       
-      // Use higher quality tile layer with dark theme
-      L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_toner_lite/{z}/{x}/{y}{r}.png',{
+      // Use CARTO's key-free dark tiles instead of the unauthorized Stadia endpoint
+      L.tileLayer('https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',{
         maxZoom:19,
         minZoom:10,
-        attribution:'&copy; Stadia Maps, &copy; OpenMapTiles',
+        attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
         fadeAnimation:true,
         zoomAnimation:true
       }).addTo(map);
