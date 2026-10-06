@@ -1,0 +1,45 @@
+═══════════════════════════════════════════════════════════════
+  PREDICTSHIELD - QUICK START GUIDE
+═══════════════════════════════════════════════════════════════
+
+⚠️  REQUIRED: Node.js must be installed first!
+
+STEP 1: INSTALL NODE.JS
+───────────────────────────────────────────────────────────────
+1. Go to: https://nodejs.org/
+2. Download the LTS version (big green button)
+3. Run installer - CHECK "Add to PATH" ✅
+4. RESTART your computer (or at least close all terminals)
+
+STEP 2: VERIFY INSTALLATION
+───────────────────────────────────────────────────────────────
+Open PowerShell and type:
+    node --version
+    
+You should see: v18.x.x or similar
+If you see "not recognized", Node.js is not installed correctly.
+
+STEP 3: INSTALL DEPENDENCIES
+───────────────────────────────────────────────────────────────
+Open PowerShell in this folder and type:
+    npm install express python-shell
+
+STEP 4: START SERVER
+───────────────────────────────────────────────────────────────
+Type:
+    node server.js
+
+You should see:
+    🚀 PredictShield server running on http://localhost:3000
+
+STEP 5: OPEN BROWSER
+───────────────────────────────────────────────────────────────
+Go to: http://localhost:3000
+
+═══════════════════════════════════════════════════════════════
+
+ALTERNATIVE: Double-click "start.bat" after installing Node.js
+
+═══════════════════════════════════════════════════════════════
+
+

@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Safio — Login</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600&family=Allura&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" rel="stylesheet" />
+
+  <meta name="description" content="Safio Login — Secure access to your predictive safety dashboard." />
+
+  <style>
+    /* CSS reset */
+    *,*::before,*::after{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;line-height:1.6;letter-spacing:0.3px}
+    
+    /* Typography */
+    h1,h2,h3,h4,h5,h6{font-family:'Orbitron','Inter',system-ui;font-weight:700;line-height:1.2;letter-spacing:-0.5px}
+    p{margin:0;line-height:1.7;font-weight:400}
+    a{color:var(--accent);text-decoration:none;transition:color 0.3s ease}
+
+    /* Theme variables */
+    :root{
+      --bg:#0f1724;
+      --panel:#0b1220;
+      --muted:#9aa4b2;
+      --accent:#36f3ff;
+      --accent-2:#6d63ff;
+      --success:#21d07a;
+      --warning:#ffb020;
+      --danger:#ff4d6d;
+      --glass: rgba(255,255,255,0.04);
+      --text:#e6f0f6;
+      --soft:#c6d2dd;
+      --shadow: 0 6px 30px rgba(2,6,23,0.6);
+      --glass-border: rgba(255,255,255,0.03);
+    }
+
+    :root[data-theme='light']{
+      --bg:#f7fbff;
+      --panel:#ffffff;
+      --muted:#4b5563;
+      --accent:#0ea5ff;
+      --accent-2:#7c3aed;
+      --text:#061427;
+      --soft:#374151;
+      --shadow: 0 8px 30px rgba(6,8,20,0.06);
+      --glass-border: rgba(2,6,23,0.04);
+    }
+
+    :root[data-theme='neon']{
+      --bg:linear-gradient(180deg,#071028 0%, #01121a 100%);
+      --panel: rgba(1,10,18,0.6);
+      --accent: #00f0ff;
+      --accent-2: #a15bff;
+      --text: #e6fff8;
+      --glass: rgba(0,255,255,0.03);
+      --shadow: 0 10px 40px rgba(0,240,255,0.06);
+    }
+
+    /* Layout */
+    .login-container{display:flex;height:100vh;background:var(--bg)}
+    
+    /* Left side - Branding */
+    .login-brand{flex:1;display:flex;flex-direction:column;justify-content:space-between;padding:40px;background:linear-gradient(135deg,rgba(54,243,255,0.05) 0%,rgba(109,99,255,0.05) 100%);border-right:1px solid var(--glass-border);animation:slideInLeft 0.6s ease-out}
+    .brand-header{display:flex;align-items:center;gap:12px}
+    .brand-icon{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;font-weight:700;color:#001018;font-size:20px}
+    .brand-title{font-family:'Allura','Orbitron',Inter;font-size:32px;font-weight:400;letter-spacing:1px;color:var(--text);text-shadow:0 0 15px rgba(54,243,255,0.3),0 0 30px rgba(54,243,255,0.15);filter:drop-shadow(0 0 6px var(--accent))}
+    .brand-subtitle{color:var(--muted);font-size:14px;margin-top:4px;font-weight:400}
+    
+    .brand-content{flex:1;display:flex;flex-direction:column;justify-content:center;gap:40px}
+    .brand-benefit{display:flex;gap:16px;align-items:flex-start}
+    .benefit-icon{width:48px;height:48px;border-radius:10px;background:rgba(54,243,255,0.1);display:flex;align-items:center;justify-content:center;color:var(--accent);flex-shrink:0}
+    .benefit-text h3{margin:0 0 4px 0;font-size:16px;font-weight:700;color:var(--text)}
+    .benefit-text p{color:var(--muted);font-size:13px;line-height:1.6}
+    
+    .brand-footer{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px}
+    .status-dot{width:8px;height:8px;border-radius:50%;background:var(--success);animation:pulse 2s ease-in-out infinite}
+
+    /* Right side - Login Form */
+    .login-form-wrapper{flex:1;display:flex;align-items:center;justify-content:center;padding:40px;animation:slideInRight 0.6s ease-out}
+    .login-form{width:100%;max-width:400px}
+    
+    .form-header{margin-bottom:32px}
+    .form-header h1{font-family:Orbitron,Inter;font-size:32px;margin:0 0 8px 0;font-weight:700;font-style:italic;background:linear-gradient(135deg,var(--accent),var(--accent-2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-0.5px}
+    .form-header p{color:var(--muted);font-size:14px;margin:0}
+    
+    .form-group{margin-bottom:20px}
+    .form-group label{display:block;margin-bottom:8px;font-weight:600;font-size:13px;letter-spacing:0.3px;text-transform:uppercase;color:var(--text)}
+    .form-group input{width:100%;padding:12px 14px;background:var(--panel);border:1px solid var(--glass-border);border-radius:10px;color:var(--text);font-size:14px;font-weight:400;transition:all 0.3s ease;font-family:inherit}
+    .form-group input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 12px rgba(54,243,255,0.2);background:rgba(54,243,255,0.03)}
+    .form-group input::placeholder{color:var(--muted);opacity:0.6}
+    
+    .form-options{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;font-size:13px}
+    .checkbox-wrapper{display:flex;align-items:center;gap:8px}
+    .checkbox-wrapper input{width:18px;height:18px;cursor:pointer;accent-color:var(--accent)}
+    .checkbox-wrapper label{cursor:pointer;margin:0;font-weight:400}
+    .form-options a{font-size:13px;color:var(--accent)}
+    .form-options a:hover{text-decoration:underline}
+    
+    .submit-btn{width:100%;padding:12px;background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#001018;border:0;border-radius:10px;font-weight:700;font-size:14px;letter-spacing:0.5px;text-transform:uppercase;cursor:pointer;transition:all 0.3s ease;box-shadow:0 6px 18px rgba(13,40,80,0.4)}
+    .submit-btn:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(54,243,255,0.3)}
+    .submit-btn:active{transform:translateY(0);box-shadow:0 4px 12px rgba(54,243,255,0.2)}
+    
+    .form-divider{display:flex;align-items:center;gap:12px;margin:24px 0;color:var(--muted);font-size:13px}
+    .form-divider::before,.form-divider::after{content:'';flex:1;height:1px;background:var(--glass-border)}
+    
+    .social-login{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+    .social-btn{padding:10px;background:var(--panel);border:1px solid var(--glass-border);border-radius:10px;color:var(--text);cursor:pointer;font-weight:600;font-size:13px;transition:all 0.3s ease;display:flex;align-items:center;justify-content:center;gap:8px}
+    .social-btn:hover{background:rgba(54,243,255,0.1);border-color:var(--accent)}
+    
+    .form-footer{text-align:center;color:var(--muted);font-size:13px}
+    .form-footer a{color:var(--accent);font-weight:600}
+    
+    /* Theme toggle */
+    .theme-toggle-btn{position:fixed;top:20px;right:20px;background:var(--panel);border:1px solid var(--glass-border);padding:8px 12px;border-radius:10px;cursor:pointer;color:var(--text);font-weight:500;transition:all 0.3s ease;display:flex;align-items:center;gap:8px}
+    .theme-toggle-btn:hover{background:rgba(54,243,255,0.1);border-color:var(--accent)}
+    
+    /* Animations */
+    @keyframes slideInLeft{from{opacity:0;transform:translateX(-30px)}to{opacity:1;transform:translateX(0)}}
+    @keyframes slideInRight{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
+    @keyframes slideInDown{from{opacity:0;transform:translateY(-30px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes slideInUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.7}}
+    @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+    @keyframes scaleIn{from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)}}
+    @keyframes glow{0%,100%{box-shadow:0 0 5px var(--accent),0 0 10px rgba(54,243,255,0.2)}50%{box-shadow:0 0 15px var(--accent),0 0 20px rgba(54,243,255,0.4)}}
+    @keyframes colorShift{0%{color:var(--accent)}50%{color:var(--accent-2)}100%{color:var(--accent)}}
+    @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+    
+    .login-brand{animation:slideInLeft 0.8s ease-out}
+    .login-form-wrapper{animation:slideInRight 0.8s ease-out}
+    .brand-header{animation:slideInDown 0.8s ease-out 0.2s both}
+    .brand-content{animation:slideInUp 0.8s ease-out 0.3s both}
+    .brand-footer{animation:fadeIn 0.8s ease-out 0.4s both}
+    .form-header{animation:slideInDown 0.8s ease-out 0.3s both}
+    .form-group{animation:slideInUp 0.6s ease-out;animation-fill-mode:both}
+    .form-group:nth-child(1){animation-delay:0.4s}
+    .form-group:nth-child(2){animation-delay:0.5s}
+    .submit-btn{animation:scaleIn 0.6s ease-out 0.7s both;box-shadow:0 6px 18px rgba(13,40,80,0.4)}
+    .submit-btn:hover{animation:glow 0.4s ease-in-out}
+    .form-divider{animation:fadeIn 0.8s ease-out 0.8s both}
+    .social-login{animation:slideInUp 0.6s ease-out 0.9s both}
+    .form-footer{animation:fadeIn 0.8s ease-out 1s both}
+    .theme-toggle-btn{animation:slideInDown 0.6s ease-out}
+    .form-options{animation:slideInDown 0.6s ease-out 0.6s both}
+    .social-btn{transition:all 0.3s ease}
+    .social-btn:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(54,243,255,0.2)}
+    .brand-benefit{animation:slideInLeft 0.8s ease-out;animation-fill-mode:both}
+    .brand-benefit:nth-child(1){animation-delay:0.3s}
+    .brand-benefit:nth-child(2){animation-delay:0.4s}
+    .brand-benefit:nth-child(3){animation-delay:0.5s}
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    
+    /* Responsive */
+    @media (max-width:1024px){
+      .login-brand{display:none}
+      .login-form-wrapper{padding:20px}
+    }
+    
+    @media (max-width:600px){
+      .login-form{max-width:100%}
+      .form-header h1{font-size:24px}
+      .social-login{grid-template-columns:1fr}
+    }
+    
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+  </style>
+</head>
+<body data-theme="neon">
+
+  <!-- Theme Toggle -->
+  <button class="theme-toggle-btn" id="theme-toggle" title="Toggle theme">
+    <span class="material-symbols-rounded">brightness_6</span>
+  </button>
+
+  <div class="login-container">
+    <!-- Left Side - Branding -->
+    <div class="login-brand">
+      <div class="brand-header">
+        <div>
+          <div class="brand-title">Safio</div>
+          <div class="brand-subtitle">Predictive Safety Index</div>
+        </div>
+      </div>
+
+      <div class="brand-content">
+        <div class="brand-benefit">
+          <div class="benefit-icon">
+            <span class="material-symbols-rounded">radar</span>
+          </div>
+          <div class="benefit-text">
+            <h3>Real-time Safety</h3>
+            <p>Live predictive heatmaps and AI-driven risk assessments for your city.</p>
+          </div>
+        </div>
+
+        <div class="brand-benefit">
+          <div class="benefit-icon">
+            <span class="material-symbols-rounded">groups</span>
+          </div>
+          <div class="benefit-text">
+            <h3>Community Verified</h3>
+            <p>Reports verified by community members. Trustworthy intelligence.</p>
+          </div>
+        </div>
+
+        <div class="brand-benefit">
+          <div class="benefit-icon">
+            <span class="material-symbols-rounded">auto_graph</span>
+          </div>
+          <div class="benefit-text">
+            <h3>Predictive Analytics</h3>
+            <p>Anticipate incidents before they happen with advanced forecasting.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="brand-footer">
+        <div class="status-dot"></div>
+        <span>System online • All services operational</span>
+      </div>
+    </div>
+
+    <!-- Right Side - Login Form -->
+    <div class="login-form-wrapper">
+      <div class="login-form">
+        <div class="form-header">
+          <h1>Welcome Back</h1>
+          <p>Sign in to access your safety dashboard</p>
+        </div>
+
+        <form id="login-form">
+          <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email" placeholder="your@email.com" required aria-label="Email address">
+          </div>
+
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" placeholder="••••••••" required aria-label="Password">
+          </div>
+
+          <div class="form-options">
+            <div class="checkbox-wrapper">
+              <input type="checkbox" id="remember" name="remember">
+              <label for="remember">Remember me</label>
+            </div>
+            <a href="#forgot">Forgot password?</a>
+          </div>
+
+          <button type="submit" class="submit-btn" aria-label="Sign in">Sign In</button>
+        </form>
+
+        <div class="form-divider">Or continue with</div>
+
+        <div class="social-login">
+          <button class="social-btn" type="button" aria-label="Sign in with Google">
+            <span class="material-symbols-rounded">g_translate</span>
+            Google
+          </button>
+          <button class="social-btn" type="button" aria-label="Sign in with GitHub">
+            <span class="material-symbols-rounded">code</span>
+            GitHub
+          </button>
+        </div>
+
+        <div class="form-footer">
+          Don't have an account? <a href="#signup">Create one now</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script>
+    (function(){
+      const themeToggle = document.getElementById('theme-toggle');
+      const loginForm = document.getElementById('login-form');
+
+      // Theme toggle
+      themeToggle.addEventListener('click', ()=>{
+        const current = document.documentElement.getAttribute('data-theme');
+        let next = 'light';
+        if(current === 'light') next = 'dark';
+        else if(current === 'dark') next = 'neon';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
+      });
+
+      // Load saved theme
+      const savedTheme = localStorage.getItem('theme') || 'neon';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+
+      // Form submission
+      loginForm.addEventListener('submit', (e)=>{
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        
+        // Simple validation
+        if(!email || !password){
+          alert('Please fill in all fields');
+          return;
+        }
+        
+        // Mock authentication - in real app, this would call your backend
+        console.log('Login attempt:', {email, remember: document.getElementById('remember').checked});
+        
+        // Simulate loading
+        const submitBtn = loginForm.querySelector('.submit-btn');
+        const oldText = submitBtn.textContent;
+        submitBtn.textContent = 'Signing in...';
+        submitBtn.disabled = true;
+        
+        // Simulate API call
+        setTimeout(()=>{
+          submitBtn.textContent = 'Signed in ✓';
+          submitBtn.style.background = 'linear-gradient(90deg,#21d07a,#7ff2c1)';
+          
+          // Redirect to dashboard after 1 second
+          setTimeout(()=>{
+            window.location.href = 'index.html';
+          }, 1000);
+        }, 1500);
+      });
+
+      // Social login buttons
+      document.querySelectorAll('.social-btn').forEach(btn=>{
+        btn.addEventListener('click', function(){
+          const provider = this.textContent.trim();
+          console.log('Social login with:', provider);
+          this.style.transform = 'scale(0.95)';
+          setTimeout(()=>{
+            this.style.transform = 'scale(1)';
+          }, 200);
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

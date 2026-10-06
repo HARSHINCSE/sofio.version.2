@@ -1,0 +1,778 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Safio — Next‑Gen Predictive Safety</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600&family=Allura&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" rel="stylesheet" />
+
+  <!-- Leaflet CSS (map) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+
+  <meta name="description" content="Safio — Predictive Safety Index, real-time heatmaps, community verification and AI-driven alerts for next-gen urban safety." />
+
+  <style>
+    /* CSS reset (small) */
+    *,*::before,*::after{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;line-height:1.6;letter-spacing:0.3px}
+    
+    /* Typography improvements */
+    h1,h2,h3,h4,h5,h6{font-family:'Orbitron','Inter',system-ui;font-weight:700;line-height:1.2;letter-spacing:-0.5px}
+    p{margin:0;line-height:1.7;font-weight:400}
+    strong{font-weight:600;letter-spacing:-0.2px}
+    a{color:var(--accent);text-decoration:none;transition:color 0.3s ease}
+
+    /* Theme variables (light/dark + neon accent) */
+    :root{
+      --bg:#0f1724; /* deep navy by default */
+      --panel:#0b1220;
+      --muted:#9aa4b2;
+      --accent:#36f3ff; /* cyan */
+      --accent-2:#6d63ff; /* violet */
+      --success:#21d07a;
+      --warning:#ffb020;
+      --danger:#ff4d6d;
+      --glass: rgba(255,255,255,0.04);
+      --text:#e6f0f6;
+      --soft:#c6d2dd;
+      --radius:12px;
+      --card-radius:14px;
+      --shadow: 0 6px 30px rgba(2,6,23,0.6);
+      --glass-border: rgba(255,255,255,0.03);
+      --glass-strong: rgba(255,255,255,0.06);
+    }
+
+    /* Light theme overrides (data-theme="light") */
+    :root[data-theme='light']{
+      --bg:#f7fbff;
+      --panel:#ffffff;
+      --muted:#4b5563;
+      --accent:#0ea5ff;
+      --accent-2:#7c3aed;
+      --success:#059669;
+      --warning:#f59e0b;
+      --danger:#ef4444;
+      --glass: rgba(2,6,23,0.02);
+      --text:#061427;
+      --soft:#374151;
+      --shadow: 0 8px 30px rgba(6,8,20,0.06);
+      --glass-border: rgba(2,6,23,0.04);
+      --glass-strong: rgba(2,6,23,0.04);
+    }
+
+    /* Neon mode (extra glow) */
+    :root[data-theme='neon']{
+      --bg:linear-gradient(180deg,#071028 0%, #01121a 100%);
+      --panel: rgba(1,10,18,0.6);
+      --accent: #00f0ff;
+      --accent-2: #a15bff;
+      --text: #e6fff8;
+      --glass: rgba(0,255,255,0.03);
+      --shadow: 0 10px 40px rgba(0,240,255,0.06);
+    }
+
+    /* Basic layout */
+    header.nv-nav{
+      display:flex;align-items:center;justify-content:space-between;padding:18px 28px;background:linear-gradient(180deg,transparent,rgba(255,255,255,0.01));position:sticky;top:0;z-index:50;backdrop-filter: blur(6px);
+    }
+    .nav-logo{font-family:'Allura','Orbitron',Inter,system-ui;font-weight:400;letter-spacing:1px;color:var(--accent);font-size:32px;text-shadow:0 0 15px rgba(54,243,255,0.3),0 0 30px rgba(54,243,255,0.15);filter:drop-shadow(0 0 6px var(--accent))}
+
+    .nav-actions{display:flex;gap:10px;align-items:center}
+    .icon-btn{background:transparent;border:1px solid var(--glass-border);padding:8px 10px;border-radius:10px;cursor:pointer;color:var(--text);display:inline-flex;align-items:center;gap:8px;font-weight:500;transition:all 0.3s ease}
+    .theme-toggle{font-weight:600}
+
+    .nv-wrapper{max-width:1200px;margin:28px auto;padding:0 20px}
+
+    /* HERO */
+    .hero{display:grid;grid-template-columns:1fr 520px;gap:28px;align-items:center;margin-bottom:28px}
+    .hero-content{padding:28px 20px}
+    .eyebrow{font-weight:600;color:var(--accent);letter-spacing:0.6px;margin:0 0 8px 0;font-size:13px;text-transform:uppercase;font-family:'Outfit',Inter,system-ui}
+    h1{font-family:Orbitron,Inter;font-size:42px;margin:0 0 12px 0;line-height:1.05;color:var(--text);font-weight:700;letter-spacing:-0.8px;font-style:italic;background:linear-gradient(135deg,var(--accent),var(--accent-2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .hero-copy{color:var(--muted);margin:0 0 18px 0;max-width:60%;font-size:15px;line-height:1.8;font-weight:400}
+
+    .hero-actions{display:flex;gap:12px;align-items:center;margin-bottom:18px}
+
+    /* Search */
+    .search-wrapper{display:flex;align-items:center;background:var(--panel);border:1px solid var(--glass-border);padding:10px 12px;border-radius:12px;min-width:320px;gap:8px;transition:all 0.3s ease}
+    .search-wrapper:focus-within{border-color:var(--accent);box-shadow:0 0 12px rgba(54,243,255,0.2)}
+    .search-wrapper input{background:transparent;border:0;outline:none;color:var(--text);font-size:15px;width:100%;font-weight:400;letter-spacing:0.3px}
+    .search-wrapper input::placeholder{color:var(--muted);opacity:0.7;font-weight:400}
+    .search-suggestions{position:absolute;background:var(--panel);border:1px solid var(--glass-border);margin-top:8px;padding:8px;border-radius:8px;min-width:320px;color:var(--muted);display:none;font-size:14px;font-weight:400}
+
+    .join-button{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#001018;padding:10px 16px;border-radius:999px;border:0;font-weight:700;cursor:pointer;box-shadow:0 6px 18px rgba(13,40,80,0.4);transition:transform .18s ease;font-size:14px;letter-spacing:0.5px;text-transform:uppercase}
+    .join-button:hover{transform:translateY(-3px)}
+
+    .hero-quotes{display:flex;gap:10px;margin-top:10px}
+    .hero-quotes blockquote{font-style:italic;color:var(--soft);opacity:0.9;margin:0;font-size:13px;line-height:1.6;font-weight:400;letter-spacing:0.2px}
+
+    /* Visual column */
+    .hero-visual{display:flex;flex-direction:column;gap:16px}
+    .illustration-shell{height:220px;background:linear-gradient(135deg,rgba(255,255,255,0.02),transparent);border-radius:14px;padding:14px;position:relative;overflow:hidden;border:1px solid var(--glass-border)}
+    .illustration{position:absolute;inset:0;background:radial-gradient(circle at 10% 20%, rgba(54,243,255,0.06), transparent 15%), radial-gradient(circle at 80% 70%, rgba(109,99,255,0.06), transparent 20%);border-radius:12px}
+    .particle-layer{position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen}
+
+    .map-shell{height:320px;border-radius:14px;overflow:hidden;border:1px solid var(--glass-border);box-shadow:var(--shadow);animation:slideInUp 0.8s ease-out 0.6s both}
+    #map{height:100%;min-height:320px;background:linear-gradient(135deg,rgba(54,243,255,0.05) 0%,rgba(109,99,255,0.05) 100%)}
+
+    /* Feed section */
+    .feed-section{margin-top:18px}
+    .section-heading h2{margin:0 0 6px 0;font-size:28px;font-weight:700;letter-spacing:-0.6px}
+    .section-heading p{font-size:15px;color:var(--muted);margin:0;font-weight:400;line-height:1.6}
+    .card-carousel{display:flex;gap:12px;overflow-x:auto;padding:12px 2px}
+    .feed-card{min-width:240px;background:var(--panel);padding:14px;border-radius:12px;border:1px solid var(--glass-border);box-shadow:0 6px 22px rgba(3,8,15,0.4);transition:transform .18s ease,box-shadow .18s}
+    .feed-card h3{margin:0 0 8px 0;font-size:16px;font-weight:700;letter-spacing:-0.4px;color:var(--text)}
+    .feed-card p{font-size:13px;color:var(--muted);margin:0;line-height:1.6;font-weight:400}
+    .feed-card:hover{transform:translateY(-6px);box-shadow:0 12px 36px rgba(5,10,20,0.6)}
+    .card-badge{font-size:11px;padding:6px 8px;border-radius:8px;background:rgba(255,255,255,0.03);display:inline-block;margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px}
+    .card-badge.warning{background:linear-gradient(90deg,var(--warning),#ffd59a);color:#071427;font-weight:700}
+    .card-badge.success{background:linear-gradient(90deg,var(--success),#7ff2c1);color:#02140a;font-weight:700}
+    .card-actions{display:flex;gap:8px;margin-top:12px}
+    .primary.ghost{background:transparent;border:1px solid var(--glass-border);padding:8px 12px;border-radius:10px;color:var(--text);cursor:pointer;font-weight:600;font-size:13px;letter-spacing:0.3px;text-transform:uppercase;transition:all 0.3s ease}
+    .secondary{background:transparent;border:1px dashed var(--glass-border);padding:8px 12px;border-radius:10px;color:var(--muted);font-weight:500;font-size:13px;letter-spacing:0.2px;cursor:pointer;transition:all 0.3s ease}
+
+    /* Testimonials */
+    .testimonials{margin-top:28px}
+    .testimonial-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .testimonial{background:linear-gradient(180deg,rgba(255,255,255,0.01),transparent);padding:14px;border-radius:12px;border:1px solid var(--glass-border)}
+    .testimonial p{font-size:14px;color:var(--text);line-height:1.8;margin:0 0 10px 0;font-weight:400;font-style:italic}
+    .testimonial span{font-size:12px;color:var(--muted);font-weight:500;letter-spacing:0.3px}
+
+    /* Widgets grid */
+    .widgets-grid{display:grid;grid-template-columns:360px 1fr;gap:16px;margin-top:28px}
+    #info-panel{background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);padding:16px;border-radius:12px;border:1px solid var(--glass-border)}
+    .brand-title{margin:0;font-family:'Allura','Orbitron',Inter;font-weight:400;font-size:48px;letter-spacing:2px;color:var(--accent);text-shadow:0 0 20px rgba(54,243,255,0.4),0 0 40px rgba(54,243,255,0.2);filter:drop-shadow(0 0 8px var(--accent));animation:colorShift 4s ease-in-out infinite}
+
+    .risk-section{margin-top:12px}
+    .risk-label{display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:14px;letter-spacing:0.2px}
+    .risk-value{font-weight:800;font-size:32px;color:var(--accent);font-family:Orbitron,Inter;letter-spacing:-1px}
+    .risk-bar-container{background:var(--glass);height:14px;border-radius:10px;margin-top:10px;overflow:hidden;border:1px solid var(--glass-border)}
+    .risk-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width 800ms cubic-bezier(.2,.9,.2,1)}
+    .risk-status{margin-top:8px;color:var(--muted);font-size:13px;font-weight:500;letter-spacing:0.2px}
+
+    #news-dashboard{background:var(--panel);padding:12px;border-radius:12px;border:1px solid var(--glass-border)}
+    .news-header{display:flex;align-items:center;justify-content:space-between}
+    .news-header h2{margin:0;font-size:16px;font-weight:700;letter-spacing:-0.4px}
+    .news-subtitle{font-size:12px;font-weight:500;letter-spacing:0.3px}
+    .news-content{margin-top:10px;min-height:100px;font-size:13px}
+
+    /* Loading overlay */
+    .loading-overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,rgba(1,3,8,0.6),rgba(1,3,8,0.85));z-index:80;color:var(--text);backdrop-filter:blur(4px)}
+    .spinner{width:46px;height:46px;border-radius:50%;border:4px solid rgba(255,255,255,0.06);border-top-color:var(--accent);animation:spin 1s linear infinite}
+    @keyframes spin{to{transform:rotate(1turn)}}
+
+    /* Classic animations */
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    @keyframes fadeOut{from{opacity:1}to{opacity:0}}
+    @keyframes slideInDown{from{opacity:0;transform:translateY(-30px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes slideInUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes slideInLeft{from{opacity:0;transform:translateX(-30px)}to{opacity:1;transform:translateX(0)}}
+    @keyframes slideInRight{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.7}}
+    @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+    @keyframes scaleIn{from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)}}
+    @keyframes glow{0%,100%{box-shadow:0 0 5px var(--accent),0 6px 22px rgba(3,8,15,0.4)}50%{box-shadow:0 0 15px var(--accent),0 12px 36px rgba(5,10,20,0.6)}}
+    @keyframes shimmer{0%{background-position:200% center}100%{background-position:-200% center}}
+    @keyframes bounce{0%,100%{transform:translateY(0)}25%{transform:translateY(-8px)}50%{transform:translateY(-4px)}}
+    @keyframes rotate{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+    @keyframes expandWidth{from{width:0}to{width:100%}}
+    @keyframes wobble{0%,100%{transform:translateX(0)}25%{transform:translateX(-2px)}75%{transform:translateX(2px)}}
+    @keyframes heartbeat{0%,100%{transform:scale(1)}10%,30%{transform:scale(0.95)}}
+    @keyframes colorShift{0%{color:var(--accent)}50%{color:var(--accent-2)}100%{color:var(--accent)}}
+    @keyframes slideInRotate{from{opacity:0;transform:translateY(30px) rotate(-5deg)}to{opacity:1;transform:translateY(0) rotate(0deg)}}
+
+    /* Ripple effect */
+    @keyframes scale-ripple{from{width:20px;height:20px;opacity:0.8}to{width:200px;height:200px;opacity:0}}
+
+    header.nv-nav{animation:slideInDown 0.6s ease-out}
+    h1{animation:slideInLeft 0.8s ease-out}
+    .hero-copy{animation:fadeIn 1s ease-out 0.2s both}
+    .hero-actions{animation:slideInUp 0.8s ease-out 0.3s both}
+    .hero-quotes{animation:fadeIn 1.2s ease-out 0.5s both}
+    .hero-visual{animation:slideInRight 0.8s ease-out 0.4s both}
+    .feed-card{animation:fadeIn 0.6s ease-out;animation-fill-mode:both}
+    .feed-card:nth-child(1){animation-delay:0.1s}
+    .feed-card:nth-child(2){animation-delay:0.2s}
+    .feed-card:nth-child(3){animation-delay:0.3s}
+    .feed-card:nth-child(4){animation-delay:0.4s}
+    .testimonial{animation:slideInUp 0.8s ease-out;animation-fill-mode:both}
+    .testimonial:nth-child(1){animation-delay:0.1s}
+    .testimonial:nth-child(2){animation-delay:0.2s}
+    .testimonial:nth-child(3){animation-delay:0.3s}
+    #info-panel{animation:slideInLeft 0.8s ease-out 0.2s both}
+    #news-dashboard{animation:slideInRight 0.8s ease-out 0.2s both}
+    .icon-btn{transition:all 0.3s ease}
+    .icon-btn:hover{transform:scale(1.1) rotate(5deg);box-shadow:0 0 10px rgba(54,243,255,0.3)}
+    .join-button{animation:scaleIn 0.6s ease-out 0.4s both}
+    .primary.ghost{transition:all 0.3s ease}
+    .primary.ghost:hover{background:rgba(54,243,255,0.1);box-shadow:0 0 10px rgba(54,243,255,0.2);transform:translateY(-2px)}
+    .risk-fill{animation:glow 3s ease-in-out infinite}
+    .feed-card:hover{animation:none}
+    .section-heading h2{animation:slideInLeft 0.6s ease-out}
+    .section-heading p{animation:fadeIn 0.8s ease-out 0.1s both}
+    .eyebrow{animation:fadeIn 0.8s ease-out}
+    .nav-logo{animation:slideInLeft 0.6s ease-out}
+    .illustration-shell{animation:scaleIn 0.8s ease-out 0.5s both}
+    .map-shell{animation:slideInUp 0.8s ease-out 0.6s both}
+    .card-badge{animation:slideInRotate 0.5s ease-out;animation-fill-mode:both}
+    .feed-card:hover{transform:translateY(-8px);box-shadow:0 15px 40px rgba(54,243,255,0.1)}
+    .search-wrapper{animation:slideInUp 0.8s ease-out 0.3s both}
+    .primary.ghost:active{animation:bounce 0.4s ease-out}
+    .icon-btn:active{animation:pulse 0.3s ease-out}
+    .risk-value{animation:heartbeat 2s ease-in-out infinite}
+    #status-indicator{animation:pulse 2s ease-in-out infinite}
+    .particle-layer{animation:float 4s ease-in-out infinite}
+    .secondary:hover{transform:scale(0.98);transition:all 0.2s ease}
+    .testimonial:hover{transform:translateY(-4px);box-shadow:0 8px 20px rgba(54,243,255,0.15);transition:all 0.3s ease}
+
+    /* Map enhancements */
+    .leaflet-container{background:transparent !important}
+    .leaflet-tile-pane{filter:brightness(1.1) contrast(1.05)}
+    .user-marker{filter:drop-shadow(0 0 8px var(--accent)) drop-shadow(0 0 4px rgba(0,240,255,0.6))}
+    .custom-popup .leaflet-popup-content{padding:0 !important}
+    .leaflet-popup-content-wrapper{background:transparent !important;border:1px solid var(--glass-border) !important;border-radius:8px !important;box-shadow:0 8px 24px rgba(54,243,255,0.15) !important}
+    .leaflet-popup-tip{display:none}
+    .leaflet-control-zoom{border-radius:8px;overflow:hidden}
+    .leaflet-control-zoom-in,.leaflet-control-zoom-out{background:var(--panel);color:var(--accent);border:1px solid var(--glass-border);font-weight:bold;transition:all 0.2s ease}
+    .leaflet-control-zoom-in:hover,.leaflet-control-zoom-out:hover{background:rgba(54,243,255,0.1);box-shadow:0 0 10px rgba(54,243,255,0.3)}
+    .leaflet-heat-layer canvas{filter:drop-shadow(0 0 2px rgba(54,243,255,0.3))}
+    .leaflet-control-attribution{background:rgba(11,18,32,0.7) !important;color:var(--muted) !important;border:1px solid var(--glass-border) !important;border-radius:6px !important;font-size:11px !important}
+    .leaflet-control-attribution a{color:var(--accent) !important}
+
+    /* Responsive */
+    @media (max-width:1000px){
+      .hero{grid-template-columns:1fr;}
+      .hero-copy{max-width:100%}
+      .map-shell{height:300px}
+      .widgets-grid{grid-template-columns:1fr}
+      .testimonial-grid{grid-template-columns:1fr}
+      .card-carousel{padding-bottom:18px}
+    }
+
+    @media (max-width:600px){
+      header.nv-nav{padding:12px}
+      h1{font-size:24px}
+      .search-wrapper{min-width:unset;flex:1}
+      .search-suggestions{min-width:calc(100% - 40px)}
+      .hero-visual{order:2}
+      .hero-content{order:1}
+    }
+
+    /* small helpers */
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+  </style>
+</head>
+<body data-theme="neon">
+
+  <header class="nv-nav" role="banner">
+    <div class="nav-left" style="display:flex;align-items:center;gap:14px">
+      <div class="nav-logo" aria-hidden="true">Safio</div>
+    </div>
+
+    <nav class="nav-links" style="display:flex;gap:24px;align-items:center;margin-left:auto">
+      <a href="index.html" class="nav-link" style="color:var(--accent);font-weight:500;font-size:14px;transition:color 0.3s ease">Dashboard</a>
+      <a href="profile.html" class="nav-link" style="color:var(--text);font-weight:500;font-size:14px;transition:color 0.3s ease;opacity:0.7">Profile</a>
+      <a href="events.html" class="nav-link" style="color:var(--text);font-weight:500;font-size:14px;transition:color 0.3s ease;opacity:0.7">Events</a>
+      <a href="sos.html" class="nav-link" style="background:linear-gradient(135deg,var(--accent),var(--accent-2));padding:8px 16px;border-radius:8px;color:#000;font-weight:600;font-size:14px;transition:transform 0.3s ease">SOS</a>
+    </nav>
+
+    <div class="nav-actions">
+      <button class="icon-btn" id="theme-btn" aria-pressed="false" title="Toggle theme">
+        <span class="material-symbols-rounded">brightness_6</span>
+        <span class="sr-only">Toggle Theme</span>
+      </button>
+      <button class="icon-btn" id="neon-toggle" title="Toggle Neon Accent">
+        <span class="material-symbols-rounded">auto_awesome</span>
+      </button>
+      <button class="icon-btn" id="profile" title="Profile" onclick="window.location.href='profile.html'">
+        <span class="material-symbols-rounded">account_circle</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="nv-wrapper" id="main">
+
+    <!-- HERO -->
+    <section class="hero" aria-labelledby="hero-heading">
+      <div class="hero-content">
+        <p class="eyebrow">Urban Safety Intelligence</p>
+        <h1 id="hero-heading">Anticipate. Alert. Act — City safety that thinks ahead.</h1>
+        <p class="hero-copy">NxtGenGuard transforms reports into foresight. Real‑time predictive heatmaps, AI risk briefings, and community‑verified feeds help teams and citizens prevent incidents before they happen.</p>
+
+        <div class="hero-actions">
+          <div style="position:relative" class="search-wrapper" role="search">
+            <span class="material-symbols-rounded" aria-hidden="true">search</span>
+            <input id="event-search" type="search" placeholder="Search incidents, locations or missions" aria-label="Search incidents" autocomplete="off">
+            <div id="search-suggestions" class="search-suggestions" role="listbox"></div>
+          </div>
+
+          <button id="join-vibe-btn" class="join-button" aria-label="Join the Shield">Join the Shield</button>
+        </div>
+
+        <div class="hero-quotes" aria-hidden="true">
+          <blockquote>“City intelligence that warns before the storm.”</blockquote>
+          <blockquote>“Predictive safety — so citizens can plan with peace of mind.”</blockquote>
+        </div>
+      </div>
+
+      <div class="hero-visual" aria-hidden="false">
+        <div class="map-shell" aria-label="City risk map">
+          <div id="map" role="application" aria-label="Interactive city map"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Live Feed -->
+    <section class="feed-section">
+      <div class="section-heading">
+        <h2>Live City Feed</h2>
+        <p>AI‑curated missions, alerts and community tasks — fast to act, simple to join.</p>
+      </div>
+
+      <div class="card-carousel" id="card-carousel" aria-live="polite">
+        <article class="feed-card" tabindex="0">
+          <div class="card-badge">Mission</div>
+          <h3>Night Ops — Marina Grid</h3>
+          <p>Co‑monitor sensors and crowd signals. Volunteers needed for 10 PM patrol.</p>
+          <div class="card-actions">
+            <button class="primary ghost" data-confetti>Join Mission</button>
+            <button class="secondary">Details</button>
+          </div>
+        </article>
+
+        <article class="feed-card" tabindex="0">
+          <div class="card-badge warning">Alert</div>
+          <h3>Transit Hub Surge</h3>
+          <p>Heatmap spike near central station. Recommend temporary clearing route.</p>
+          <div class="card-actions">
+            <button class="primary ghost" data-confetti>Deploy Beacon</button>
+            <button class="secondary">View</button>
+          </div>
+        </article>
+
+        <article class="feed-card" tabindex="0">
+          <div class="card-badge success">Collab</div>
+          <h3>Safety Hack Lab</h3>
+          <p>48‑hour sprint for predictive patrol algorithms. RSVP limited.</p>
+          <div class="card-actions">
+            <button class="primary ghost" data-confetti>RSVP</button>
+            <button class="secondary">Share</button>
+          </div>
+        </article>
+
+        <article class="feed-card" tabindex="0">
+          <div class="card-badge info">Intel</div>
+          <h3>Safehouse Pop‑Up</h3>
+          <p>Community haven with med pods and chargers. Volunteers welcome.</p>
+          <div class="card-actions">
+            <button class="primary ghost" data-confetti>Volunteer</button>
+            <button class="secondary">Navigate</button>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="testimonials">
+      <div class="section-heading">
+        <h2>Trusted by the Night Watch</h2>
+        <p>Field agents, medics and civic volunteers share their signal.</p>
+      </div>
+
+      <div class="testimonial-grid">
+        <div class="testimonial">
+          <p>“NxtGenGuard helps us anticipate hotspots — we no longer react, we prevent.”</p>
+          <span>— Aanya, Field Analyst</span>
+        </div>
+        <div class="testimonial">
+          <p>“The missions format makes civic engagement meaningful and fun.”</p>
+          <span>— Marcus, Civic Tech Lead</span>
+        </div>
+        <div class="testimonial">
+          <p>“Feels professional and reassuring — like a city-wide safety dashboard.”</p>
+          <span>— Dae, Operations Chief</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Widgets -->
+    <section class="widgets-grid" aria-hidden="false">
+      <div id="info-panel" role="region" aria-labelledby="info-heading">
+        <div class="panel-header" style="display:flex;justify-content:center;align-items:center">
+          <h1 id="info-heading" class="brand-title">Safio</h1>
+          <div style="display:flex;align-items:center;gap:10px">
+            <div id="status-indicator" title="System status" aria-hidden="true" style="width:12px;height:12px;border-radius:50%;background:var(--success);box-shadow:0 0 10px rgba(0,0,0,0.2)"></div>
+          </div>
+        </div>
+
+        <div class="risk-section">
+          <div class="risk-label">
+            <span>Current Risk Score</span>
+            <span id="risk-value" class="risk-value">--</span>
+          </div>
+
+          <div class="risk-bar-container" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <div class="risk-fill" id="risk-fill"></div>
+          </div>
+
+          <div class="risk-status" id="risk-status">Calculating predictive safety…</div>
+        </div>
+
+        <div class="info-footer" style="margin-top:14px;display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted)">
+          <div class="info-item">
+            <span class="info-label">Location:</span>
+            <div id="location-text">Acquiring...</div>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Last Update:</span>
+            <div id="update-time">--:--</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="news-dashboard" role="region" aria-labelledby="news-heading">
+        <div class="news-header">
+          <div>
+            <h2 id="news-heading">📰 Local News</h2>
+            <div class="news-subtitle" style="color:var(--muted);font-size:13px">Within 1–2 km radius</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <button class="icon-btn" id="refresh-news-btn" title="Refresh news">
+              <span class="material-symbols-rounded">refresh</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="news-content" id="news-content">
+          <div class="news-loading">
+            <div class="news-spinner" aria-hidden="true" style="width:28px;height:28px;border:3px solid rgba(255,255,255,0.04);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite"></div>
+            <p style="color:var(--muted);margin-top:8px">Loading local news…</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Loading Overlay (hidden when ready) -->
+  <div id="loading-overlay" class="loading-overlay" style="display:flex;">
+    <div style="text-align:center">
+      <div class="spinner" role="status" aria-hidden="true"></div>
+      <p style="margin-top:12px">Initializing Safio…</p>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+
+  <script>
+    // Lightweight JS to enhance interactivity: theme toggle, map init, mock PSI, responsive tweaks
+    (function(){
+      const body = document.body;
+      const themeBtn = document.getElementById('theme-btn');
+      const neonBtn = document.getElementById('neon-toggle');
+      const joinBtn = document.getElementById('join-vibe-btn');
+      const loading = document.getElementById('loading-overlay');
+      const riskFill = document.getElementById('risk-fill');
+      const riskVal = document.getElementById('risk-value');
+      const riskStatus = document.getElementById('risk-status');
+      const locationText = document.getElementById('location-text');
+      const updateTime = document.getElementById('update-time');
+      const newsContent = document.getElementById('news-content');
+      const refreshNews = document.getElementById('refresh-news-btn');
+
+      // Theme cycle: neon -> light -> dark
+      themeBtn.addEventListener('click', ()=>{
+        const current = document.documentElement.getAttribute('data-theme');
+        if(current === 'neon'){
+          document.documentElement.setAttribute('data-theme','light');
+          themeBtn.setAttribute('aria-pressed','false');
+        } else if(current === 'light'){
+          document.documentElement.setAttribute('data-theme','dark');
+          themeBtn.setAttribute('aria-pressed','false');
+        } else {
+          document.documentElement.setAttribute('data-theme','neon');
+          themeBtn.setAttribute('aria-pressed','true');
+        }
+      });
+
+      neonBtn.addEventListener('click', ()=>{
+        const dt = document.documentElement.getAttribute('data-theme');
+        if(dt !== 'neon'){
+          document.documentElement.setAttribute('data-theme','neon');
+        } else {
+          document.documentElement.setAttribute('data-theme','dark');
+        }
+      });
+
+      // Join button micro-interaction with ripple effect
+      joinBtn.addEventListener('click', function(e){
+        // Create ripple effect
+        const rect = this.getBoundingClientRect();
+        const ripple = document.createElement('span');
+        ripple.style.position = 'absolute';
+        ripple.style.borderRadius = '50%';
+        ripple.style.background = 'rgba(255,255,255,0.6)';
+        ripple.style.left = (e.clientX - rect.left) + 'px';
+        ripple.style.top = (e.clientY - rect.top) + 'px';
+        ripple.style.width = ripple.style.height = '20px';
+        ripple.style.pointerEvents = 'none';
+        ripple.style.transform = 'translate(-50%, -50%)';
+        ripple.style.animation = 'scale-ripple 0.6s ease-out forwards';
+        this.style.position = 'relative';
+        this.style.overflow = 'hidden';
+        this.appendChild(ripple);
+        setTimeout(() => ripple.remove(), 600);
+        
+        joinBtn.animate([{transform:'scale(1)'},{transform:'scale(1.04)'},{transform:'scale(1)'}],{duration:420,easing:'ease-out'});
+        const old = joinBtn.textContent;
+        joinBtn.textContent = 'Joined ✓';
+        joinBtn.style.animation = 'pulse 0.5s ease-out';
+        setTimeout(()=> {
+          joinBtn.textContent = old;
+          joinBtn.style.animation = 'none';
+        },1400);
+      });
+
+      // Initialize map with enhanced styling
+      let map = L.map('map',{
+        zoomControl:false,
+        attributionControl:true,
+        keyboard:true,
+        dragging:true,
+        touchZoom:true,
+        scrollWheelZoom:true,
+        tap:true,
+        zoomSnap:0.5,
+        zoomDelta:0.5
+      }).setView([12.9716,77.5946],12);
+      
+      // Use higher quality tile layer with dark theme
+      L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_toner_lite/{z}/{x}/{y}{r}.png',{
+        maxZoom:19,
+        minZoom:10,
+        attribution:'&copy; Stadia Maps, &copy; OpenMapTiles',
+        fadeAnimation:true,
+        zoomAnimation:true
+      }).addTo(map);
+
+      // Enhanced heat points with detailed locations
+      const demoPoints = [
+        [12.9716,77.5946,0.7],
+        [12.9758,77.5999,0.4],
+        [12.9600,77.5800,0.55],
+        [12.9860,77.6100,0.85],
+        [12.9520,77.6200,0.5],
+        [12.9900,77.5750,0.65],
+        [12.9650,77.6050,0.45],
+        [12.9750,77.5900,0.75]
+      ];
+      const heat = L.heatLayer(demoPoints,{
+        radius:50,
+        blur:30,
+        maxZoom:15,
+        gradient:{0.2:'#00f0ff',0.5:'#a15bff',0.7:'#ff4d6d',1.0:'#ff1744'}
+      }).addTo(map);
+
+      // Add detailed location markers with names
+      const locationMarkers = [
+        {lat:12.9716,lng:77.5946,name:'City Center',risk:'High'},
+        {lat:12.9758,lng:77.5999,name:'Transit Hub',risk:'Medium'},
+        {lat:12.9600,lng:77.5800,name:'Marina District',risk:'Moderate'},
+        {lat:12.9860,lng:77.6100,name:'Business Park',risk:'High'},
+        {lat:12.9520,lng:77.6200,name:'Shopping Area',risk:'Low'},
+        {lat:12.9900,lng:77.5750,name:'Waterfront',risk:'Moderate'},
+        {lat:12.9650,lng:77.6050,name:'Cultural Zone',risk:'Low'},
+        {lat:12.9750,lng:77.5900,name:'Tech Hub',risk:'Medium'}
+      ];
+
+      locationMarkers.forEach(loc => {
+        const riskColor = loc.risk === 'High' ? '#ff1744' : loc.risk === 'Medium' ? '#ffb020' : '#21d07a';
+        const marker = L.circleMarker([loc.lat,loc.lng],{
+          radius:8,
+          fillColor:riskColor,
+          color:'rgba(255,255,255,0.9)',
+          weight:2,
+          opacity:1,
+          fillOpacity:0.85,
+          className:'location-marker'
+        }).addTo(map);
+
+        marker.bindPopup(`<div style="background:var(--panel);color:var(--text);padding:10px;border-radius:6px;border:1px solid var(--glass-border);font-size:12px;min-width:120px"><strong>${loc.name}</strong><br>Risk: <span style="color:${riskColor}">${loc.risk}</span></div>`,{
+          className:'custom-popup',
+          autoClose:true,
+          closeButton:false
+        });
+
+        marker.on('mouseover', function() { this.openPopup(); });
+        marker.on('mouseout', function() { this.closePopup(); });
+      });
+
+      // Mock PSI calculation using past-data assumptions
+      function calculateMockPSI(){
+        // Simulate collection of weighted signals
+        const base = Math.floor(30 + Math.random()*50); // base risk
+        const weatherBoost = Math.random() < 0.25 ? 15 : 0; // e.g. rainy
+        const nightBoost = (new Date()).getHours() >= 20 ? 12 : 0;
+        const verifiedBoost = -Math.floor(Math.random()*8);
+        const psi = Math.max(2,Math.min(98, base + weatherBoost + nightBoost + verifiedBoost ));
+        return psi;
+      }
+
+      function renderPSI(){
+        const psi = calculateMockPSI();
+        riskFill.style.width = psi + '%';
+        riskFill.setAttribute('aria-valuenow',psi);
+        riskVal.textContent = psi;
+        if(psi < 30){ riskStatus.textContent = 'Low — Normal activity'; }
+        else if(psi < 50){ riskStatus.textContent = 'Moderate — Stay aware'; }
+        else if(psi < 70){ riskStatus.textContent = 'High — Avoid non-essential travel'; }
+        else{ riskStatus.textContent = 'Severe — Take precautions'; }
+
+        const now = new Date();
+        updateTime.textContent = now.toLocaleTimeString();
+      }
+
+      // News mock
+      function loadMockNews(){
+        newsContent.innerHTML = '';
+        const items = [
+          {t:'Road closure near MG Road',d:'Minor collision cleared — traffic delayed 20 mins.'},
+          {t:'Community patrol scheduled',d:'Volunteer group meeting at 9 PM near station.'},
+          {t:'Beacon deployed — Transit Hub',d:'Temporary sensor placed to monitor crowd surge.'}
+        ];
+        items.forEach((it, idx)=>{
+          const el = document.createElement('div');
+          el.style.padding='8px 0';
+          el.style.borderBottom='1px dashed var(--glass-border)';
+          el.style.animation = `slideInLeft 0.5s ease-out ${idx * 0.1}s both`;
+          el.style.cursor = 'pointer';
+          el.style.transition = 'all 0.3s ease';
+          el.onmouseover = function(){ this.style.transform = 'translateX(4px)'; this.style.paddingLeft = '8px'; };
+          el.onmouseout = function(){ this.style.transform = 'translateX(0)'; this.style.paddingLeft = '0'; };
+          el.innerHTML = `<strong style="color:var(--text)">${it.t}</strong><div style="color:var(--muted);font-size:13px">${it.d}</div>`;
+          newsContent.appendChild(el);
+        });
+      }
+
+      refreshNews.addEventListener('click', ()=>{ loadMockNews(); });
+
+      // Try to acquire geolocation for personalization
+      function tryLocate(){
+        if('geolocation' in navigator){
+          navigator.geolocation.getCurrentPosition(pos=>{
+            const lat = pos.coords.latitude.toFixed(4);
+            const lng = pos.coords.longitude.toFixed(4);
+            locationText.textContent = `${lat}, ${lng}`;
+            map.setView([lat,lng],13);
+            
+            // Create enhanced user marker with glow effect
+            const userMarkerColor = varColor('--accent');
+            const userMarker = L.circleMarker([lat,lng],{
+              radius:10,
+              fillColor:userMarkerColor,
+              color:'rgba(255,255,255,0.8)',
+              weight:2,
+              opacity:1,
+              fillOpacity:0.9,
+              className:'user-marker'
+            }).addTo(map);
+            
+            // Add popup with styling
+            userMarker.bindPopup('<div style="background:var(--panel);color:var(--text);padding:8px;border-radius:6px;border:1px solid var(--glass-border)">Your Location</div>',{
+              className:'custom-popup',
+              autoClose:false
+            });
+            
+            // Add glow effect with another circle
+            L.circleMarker([lat,lng],{
+              radius:15,
+              fillColor:'transparent',
+              color:userMarkerColor,
+              weight:1.5,
+              opacity:0.5,
+              fillOpacity:0,
+              dashArray:'5,5'
+            }).addTo(map);
+            
+            renderPSI();
+            hideLoading();
+          },err=>{
+            locationText.textContent = 'Location blocked';
+            renderPSI();
+            hideLoading();
+          },{timeout:8000});
+        } else {
+          locationText.textContent = 'Location unavailable';
+          renderPSI();
+          hideLoading();
+        }
+      }
+
+      function varColor(name){
+        // helper to read CSS variable (fallback)
+        const v = getComputedStyle(document.documentElement).getPropertyValue(name);
+        return v ? v.trim() : '#36f3ff';
+      }
+
+      function hideLoading(){
+        loading.style.display = 'none';
+      }
+
+      // initial
+      loadMockNews();
+      renderPSI();
+      tryLocate();
+
+      // periodic updates for demo
+      setInterval(()=>{ renderPSI(); }, 12000);
+
+      // accessibility: keyboard support for carousel items
+      document.getElementById('card-carousel').addEventListener('keydown', (e)=>{
+        if(e.key === 'ArrowRight') e.target.nextElementSibling?.focus();
+        if(e.key === 'ArrowLeft') e.target.previousElementSibling?.focus();
+      });
+
+      // simple search suggestions (mocked)
+      const search = document.getElementById('event-search');
+      const suggestions = document.getElementById('search-suggestions');
+      const sampleHints = ['marina grid','transit hub','road damage','safety lab'];
+      search.addEventListener('input', ()=>{
+        const v = search.value.trim();
+        if(!v){ 
+          suggestions.style.animation = 'fadeOut 0.3s ease-out';
+          setTimeout(()=> suggestions.style.display='none',300);
+          return; 
+        }
+        suggestions.style.display = 'block';
+        suggestions.style.animation = 'slideInDown 0.3s ease-out';
+        suggestions.innerHTML = sampleHints.filter(h=>h.includes(v.toLowerCase())).map((h, idx)=>`<div style="padding:6px 8px;animation:fadeIn 0.3s ease-out ${idx * 0.05}s both">${h}</div>`).join('');
+      });
+
+      // Click-out to hide suggestions
+      document.addEventListener('click', (ev)=>{ if(!ev.target.closest('.search-wrapper')) suggestions.style.display='none'; });
+
+      // Add animations to all buttons
+      document.querySelectorAll('.primary.ghost, .secondary').forEach(btn => {
+        btn.addEventListener('click', function(){
+          this.animate([
+            {transform:'scale(1)'},
+            {transform:'scale(0.95)'},
+            {transform:'scale(1)'}
+          ], {duration:300, easing:'ease-out'});
+        });
+      });
+
+      // Remove loading overlay once map tiles load
+      map.whenReady(()=>{ setTimeout(hideLoading,800); });
+
+    })();
+  </script>
+</body>
+</html>
